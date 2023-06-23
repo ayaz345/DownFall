@@ -143,11 +143,12 @@ class GeneratorTest(unittest.TestCase):
   def testNestedTypes(self):
     self.assertEquals(
         set(unittest_pb2.TestAllTypes.DESCRIPTOR.nested_types),
-        set([
+        {
             unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR,
             unittest_pb2.TestAllTypes.OptionalGroup.DESCRIPTOR,
             unittest_pb2.TestAllTypes.RepeatedGroup.DESCRIPTOR,
-        ]))
+        },
+    )
     self.assertEqual(unittest_pb2.TestEmptyMessage.DESCRIPTOR.nested_types, [])
     self.assertEqual(
         unittest_pb2.TestAllTypes.NestedMessage.DESCRIPTOR.nested_types, [])

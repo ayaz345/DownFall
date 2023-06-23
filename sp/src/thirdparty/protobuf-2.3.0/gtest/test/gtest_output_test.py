@@ -191,9 +191,9 @@ def GetShellCommandOutput(env_cmd):
   # Changes made by os.environ.clear are not inheritable by child processes
   # until Python 2.6. To produce inheritable changes we have to delete
   # environment items with the del statement.
-  for key in os.environ.keys():
+  for key in os.environ:
     del os.environ[key]
-  os.environ.update(old_env_vars)
+  os.environ |= old_env_vars
 
   return p.output
 
@@ -252,14 +252,12 @@ class GTestOutputTest(gtest_test_utils.TestCase):
   def testOutput(self):
     output = GetOutputOfAllCommands()
 
-    golden_file = open(GOLDEN_PATH, 'rb')
-    # A mis-configured source control system can cause \r appear in EOL
-    # sequences when we read the golden file irrespective of an operating
-    # system used. Therefore, we need to strip those \r's from newlines
-    # unconditionally.
-    golden = ToUnixLineEnding(golden_file.read())
-    golden_file.close()
-
+    with open(GOLDEN_PATH, 'rb') as golden_file:
+      # A mis-configured source control system can cause \r appear in EOL
+      # sequences when we read the golden file irrespective of an operating
+      # system used. Therefore, we need to strip those \r's from newlines
+      # unconditionally.
+      golden = ToUnixLineEnding(golden_file.read())
     # We want the test to pass regardless of certain features being
     # supported or not.
     if CAN_GENERATE_GOLDEN_FILE:
@@ -286,21 +284,17 @@ if __name__ == '__main__':
   if sys.argv[1:] == [GENGOLDEN_FLAG]:
     if CAN_GENERATE_GOLDEN_FILE:
       output = GetOutputOfAllCommands()
-      golden_file = open(GOLDEN_PATH, 'wb')
-      golden_file.write(output)
-      golden_file.close()
+      with open(GOLDEN_PATH, 'wb') as golden_file:
+        golden_file.write(output)
     else:
       message = (
           """Unable to write a golden file when compiled in an environment
 that does not support all the required features (death tests""")
-      if IS_WINDOWS:
-        message += (
-            """\nand typed tests). Please check that you are using VC++ 8.0 SP1
-or higher as your compiler.""")
-      else:
-        message += """\nand typed tests).  Please generate the golden file
-using a binary built with those features enabled."""
-
+      message += (
+          """\nand typed tests). Please check that you are using VC++ 8.0 SP1
+or higher as your compiler.""" if IS_WINDOWS else
+          """\nand typed tests).  Please generate the golden file
+using a binary built with those features enabled.""")
       sys.stderr.write(message)
       sys.exit(1)
   else:

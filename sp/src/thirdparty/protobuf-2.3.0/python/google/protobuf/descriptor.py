@@ -87,8 +87,7 @@ class DescriptorBase(object):
     try:
       options_class = getattr(descriptor_pb2, self._options_class_name)
     except AttributeError:
-      raise RuntimeError('Unknown options class name %s!' %
-                         (self._options_class_name))
+      raise RuntimeError(f'Unknown options class name {self._options_class_name}!')
     self._options = options_class()
     return self._options
 
@@ -230,23 +229,22 @@ class Descriptor(_NestedDescriptorBase):
     self.fields = fields
     for field in self.fields:
       field.containing_type = self
-    self.fields_by_number = dict((f.number, f) for f in fields)
-    self.fields_by_name = dict((f.name, f) for f in fields)
+    self.fields_by_number = {f.number: f for f in fields}
+    self.fields_by_name = {f.name: f for f in fields}
 
     self.nested_types = nested_types
-    self.nested_types_by_name = dict((t.name, t) for t in nested_types)
+    self.nested_types_by_name = {t.name: t for t in nested_types}
 
     self.enum_types = enum_types
     for enum_type in self.enum_types:
       enum_type.containing_type = self
-    self.enum_types_by_name = dict((t.name, t) for t in enum_types)
-    self.enum_values_by_name = dict(
-        (v.name, v) for t in enum_types for v in t.values)
+    self.enum_types_by_name = {t.name: t for t in enum_types}
+    self.enum_values_by_name = {v.name: v for t in enum_types for v in t.values}
 
     self.extensions = extensions
     for extension in self.extensions:
       extension.extension_scope = self
-    self.extensions_by_name = dict((f.name, f) for f in extensions)
+    self.extensions_by_name = {f.name: f for f in extensions}
     self.is_extendable = is_extendable
     self.extension_ranges = extension_ranges
 
@@ -439,8 +437,8 @@ class EnumDescriptor(_NestedDescriptorBase):
     self.values = values
     for value in self.values:
       value.type = self
-    self.values_by_name = dict((v.name, v) for v in values)
-    self.values_by_number = dict((v.number, v) for v in values)
+    self.values_by_name = {v.name: v for v in values}
+    self.values_by_number = {v.number: v for v in values}
 
     self._serialized_start = serialized_start
     self._serialized_end = serialized_end
@@ -508,10 +506,7 @@ class ServiceDescriptor(_NestedDescriptorBase):
 
   def FindMethodByName(self, name):
     """Searches for the specified method, and returns its descriptor."""
-    for method in self.methods:
-      if name == method.name:
-        return method
-    return None
+    return next((method for method in self.methods if name == method.name), None)
 
   def CopyToProto(self, proto):
     """Copies this to a descriptor_pb2.ServiceDescriptorProto.

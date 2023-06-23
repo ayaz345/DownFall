@@ -31,6 +31,7 @@
 
 """Unit test for the gtest_xml_output module"""
 
+
 __author__ = 'eefacm@gmail.com (Sean Mcafee)'
 
 import errno
@@ -48,11 +49,7 @@ GTEST_PROGRAM_NAME = "gtest_xml_output_unittest_"
 
 SUPPORTS_STACK_TRACES = False
 
-if SUPPORTS_STACK_TRACES:
-  STACK_TRACE_TEMPLATE = "\nStack trace:\n*"
-else:
-  STACK_TRACE_TEMPLATE = ""
-
+STACK_TRACE_TEMPLATE = "\nStack trace:\n*" if SUPPORTS_STACK_TRACES else ""
 EXPECTED_NON_EMPTY_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <testsuites tests="15" failures="4" disabled="2" errors="0" time="*" name="AllTests">
   <testsuite name="SuccessfulTest" tests="1" failures="0" disabled="0" errors="0" time="*">
@@ -163,15 +160,17 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
     """
 
     xml_path = os.path.join(gtest_test_utils.GetTempDir(),
-                            GTEST_PROGRAM_NAME + "out.xml")
+                            f"{GTEST_PROGRAM_NAME}out.xml")
     if os.path.isfile(xml_path):
       os.remove(xml_path)
 
     gtest_prog_path = gtest_test_utils.GetTestExecutablePath(GTEST_PROGRAM_NAME)
 
-    command = [gtest_prog_path,
-               "%s=xml:%s" % (GTEST_OUTPUT_FLAG, xml_path),
-               "--shut_down_xml"]
+    command = [
+        gtest_prog_path,
+        f"{GTEST_OUTPUT_FLAG}=xml:{xml_path}",
+        "--shut_down_xml",
+    ]
     p = gtest_test_utils.Subprocess(command)
     if p.terminated_by_signal:
       self.assert_(False,
@@ -194,10 +193,10 @@ class GTestXMLOutputUnitTest(gtest_xml_test_utils.GTestXMLTestCase):
     expected_exit_code.
     """
     xml_path = os.path.join(gtest_test_utils.GetTempDir(),
-                            gtest_prog_name + "out.xml")
+                            f"{gtest_prog_name}out.xml")
     gtest_prog_path = gtest_test_utils.GetTestExecutablePath(gtest_prog_name)
 
-    command = [gtest_prog_path, "%s=xml:%s" % (GTEST_OUTPUT_FLAG, xml_path)]
+    command = [gtest_prog_path, f"{GTEST_OUTPUT_FLAG}=xml:{xml_path}"]
     p = gtest_test_utils.Subprocess(command)
     if p.terminated_by_signal:
       self.assert_(False,

@@ -61,7 +61,7 @@ class GeneratedServiceType(type):
 
   _DESCRIPTOR_KEY = 'DESCRIPTOR'
 
-  def __init__(cls, name, bases, dictionary):
+  def __init__(self, name, bases, dictionary):
     """Creates a message service class.
 
     Args:
@@ -78,7 +78,7 @@ class GeneratedServiceType(type):
       return
     descriptor = dictionary[GeneratedServiceType._DESCRIPTOR_KEY]
     service_builder = _ServiceBuilder(descriptor)
-    service_builder.BuildService(cls)
+    service_builder.BuildService(self)
 
 
 class GeneratedServiceStubType(GeneratedServiceType):
@@ -91,7 +91,7 @@ class GeneratedServiceStubType(GeneratedServiceType):
 
   _DESCRIPTOR_KEY = 'DESCRIPTOR'
 
-  def __init__(cls, name, bases, dictionary):
+  def __init__(self, name, bases, dictionary):
     """Creates a message service stub class.
 
     Args:
@@ -101,14 +101,14 @@ class GeneratedServiceStubType(GeneratedServiceType):
         dictionary[_DESCRIPTOR_KEY] must contain a ServiceDescriptor object
         describing this protocol service type.
     """
-    super(GeneratedServiceStubType, cls).__init__(name, bases, dictionary)
+    super(GeneratedServiceStubType, self).__init__(name, bases, dictionary)
     # Don't do anything if this class doesn't have a descriptor. This happens
     # when a service stub is subclassed.
     if GeneratedServiceStubType._DESCRIPTOR_KEY not in dictionary:
       return
     descriptor = dictionary[GeneratedServiceStubType._DESCRIPTOR_KEY]
     service_stub_builder = _ServiceStubBuilder(descriptor)
-    service_stub_builder.BuildServiceStub(cls)
+    service_stub_builder.BuildServiceStub(self)
 
 
 class _ServiceBuilder(object):
@@ -223,7 +223,7 @@ class _ServiceBuilder(object):
       rpc_controller: RPC controller used to execute this method.
       callback: A callback which will be invoked when the method finishes.
     """
-    rpc_controller.SetFailed('Method %s not implemented.' % method_name)
+    rpc_controller.SetFailed(f'Method {method_name} not implemented.')
     callback(None)
 
 

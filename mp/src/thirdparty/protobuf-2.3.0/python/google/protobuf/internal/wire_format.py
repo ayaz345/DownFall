@@ -102,16 +102,12 @@ def ZigZagEncode(value):
   effectively used with varint encoding.  See wire_format.h for
   more details.
   """
-  if value >= 0:
-    return value << 1
-  return (value << 1) ^ (~0)
+  return value << 1 if value >= 0 else (value << 1) ^ (~0)
 
 
 def ZigZagDecode(value):
   """Inverse of ZigZagEncode()."""
-  if not value & 0x1:
-    return value >> 1
-  return (value >> 1) ^ (~0)
+  return value >> 1 if not value & 0x1 else (value >> 1) ^ (~0)
 
 
 

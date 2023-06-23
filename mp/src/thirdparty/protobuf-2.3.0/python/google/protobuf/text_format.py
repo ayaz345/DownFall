@@ -157,16 +157,15 @@ def _MergeField(tokenizer, message):
 
     if not message_descriptor.is_extendable:
       raise tokenizer.ParseErrorPreviousToken(
-          'Message type "%s" does not have extensions.' %
-          message_descriptor.full_name)
+          f'Message type "{message_descriptor.full_name}" does not have extensions.'
+      )
     field = message.Extensions._FindExtensionByName(name)
     if not field:
-      raise tokenizer.ParseErrorPreviousToken(
-          'Extension "%s" not registered.' % name)
+      raise tokenizer.ParseErrorPreviousToken(f'Extension "{name}" not registered.')
     elif message_descriptor != field.containing_type:
       raise tokenizer.ParseErrorPreviousToken(
-          'Extension "%s" does not extend message type "%s".' % (
-              name, message_descriptor.full_name))
+          f'Extension "{name}" does not extend message type "{message_descriptor.full_name}".'
+      )
     tokenizer.Consume(']')
   else:
     name = tokenizer.ConsumeIdentifier()
@@ -186,8 +185,8 @@ def _MergeField(tokenizer, message):
 
     if not field:
       raise tokenizer.ParseErrorPreviousToken(
-          'Message type "%s" has no field named "%s".' % (
-              message_descriptor.full_name, name))
+          f'Message type "{message_descriptor.full_name}" has no field named "{name}".'
+      )
 
   if field.cpp_type == descriptor.FieldDescriptor.CPPTYPE_MESSAGE:
     tokenizer.TryConsume(':')
@@ -199,20 +198,17 @@ def _MergeField(tokenizer, message):
       end_token = '}'
 
     if field.label == descriptor.FieldDescriptor.LABEL_REPEATED:
-      if field.is_extension:
-        sub_message = message.Extensions[field].add()
-      else:
-        sub_message = getattr(message, field.name).add()
+      sub_message = (message.Extensions[field].add() if field.is_extension else
+                     getattr(message, field.name).add())
+    elif field.is_extension:
+      sub_message = message.Extensions[field]
     else:
-      if field.is_extension:
-        sub_message = message.Extensions[field]
-      else:
-        sub_message = getattr(message, field.name)
-        sub_message.SetInParent()
+      sub_message = getattr(message, field.name)
+      sub_message.SetInParent()
 
     while not tokenizer.TryConsume(end_token):
       if tokenizer.AtEnd():
-        raise tokenizer.ParseErrorPreviousToken('Expected "%s".' % (end_token))
+        raise tokenizer.ParseErrorPreviousToken(f'Expected "{end_token}".')
       _MergeField(tokenizer, sub_message)
   else:
     _MergeScalarField(tokenizer, message, field)
@@ -272,8 +268,8 @@ def _MergeScalarField(tokenizer, message, field):
       enum_value = enum_descriptor.values_by_name.get(identifier, None)
       if enum_value is None:
         raise tokenizer.ParseErrorPreviousToken(
-            'Enum type "%s" has no value named %s.' % (
-                enum_descriptor.full_name, identifier))
+            f'Enum type "{enum_descriptor.full_name}" has no value named {identifier}.'
+        )
     value = enum_value.number
   else:
     raise RuntimeError('Unknown field type %d' % field.type)
@@ -283,11 +279,10 @@ def _MergeScalarField(tokenizer, message, field):
       message.Extensions[field].append(value)
     else:
       getattr(message, field.name).append(value)
+  elif field.is_extension:
+    message.Extensions[field] = value
   else:
-    if field.is_extension:
-      message.Extensions[field] = value
-    else:
-      setattr(message, field.name, value)
+    setattr(message, field.name, value)
 
 
 class _Tokenizer(object):
@@ -351,7 +346,7 @@ class _Tokenizer(object):
       match = re.match(self._WHITESPACE, self._current_line)
       if not match:
         break
-      length = len(match.group(0))
+      length = len(match[0])
       self._current_line = self._current_line[length:]
       self._column += length
 
@@ -379,7 +374,7 @@ class _Tokenizer(object):
       ParseError: If the text couldn't be consumed.
     """
     if not self.TryConsume(token):
-      raise self._ParseError('Expected "%s".' % token)
+      raise self._ParseError(f'Expected "{token}".')
 
   def LookingAtInteger(self):
     """Checks if the current token is an integer.
@@ -629,9 +624,8 @@ class _Tokenizer(object):
     # Make sure there is data to work on.
     self._PopLine()
 
-    match = re.match(self._TOKEN, self._current_line)
-    if match:
-      token = match.group(0)
+    if match := re.match(self._TOKEN, self._current_line):
+      token = match[0]
       self._current_line = self._current_line[len(token):]
       self.token = token
     else:
@@ -656,8 +650,8 @@ def _CEscape(text):
     if o == 34: return r'\"'   # necessary escape
     if o == 92: return r"\\"   # necessary escape
 
-    if o >= 127 or o < 32: return "\\%03o" % o # necessary escapes
-    return c
+    return "\\%03o" % o if o >= 127 or o < 32 else c
+
   return "".join([escape(c) for c in text])
 
 

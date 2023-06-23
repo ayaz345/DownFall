@@ -329,10 +329,9 @@ def ExpectAllFieldsAndExtensionsInOrder(serialized):
   """
   my_extension_int = unittest_pb2.my_extension_int
   my_extension_string = unittest_pb2.my_extension_string
-  expected_strings = []
   message = unittest_pb2.TestFieldOrderings()
   message.my_int = 1  # Field 1.
-  expected_strings.append(message.SerializeToString())
+  expected_strings = [message.SerializeToString()]
   message.Clear()
   message.Extensions[my_extension_int] = 23  # Field 5.
   expected_strings.append(message.SerializeToString())

@@ -598,17 +598,14 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual([5, 25, 20, 15, 30], proto.repeated_int32[:])
 
     # Test slice assignment with an iterator
-    proto.repeated_int32[1:4] = (i for i in xrange(3))
+    proto.repeated_int32[1:4] = iter(xrange(3))
     self.assertEqual([5, 0, 1, 2, 30], proto.repeated_int32)
 
     # Test slice assignment.
     proto.repeated_int32[1:4] = [35, 40, 45]
     self.assertEqual([5, 35, 40, 45, 30], proto.repeated_int32)
 
-    # Test that we can use the field as an iterator.
-    result = []
-    for i in proto.repeated_int32:
-      result.append(i)
+    result = list(proto.repeated_int32)
     self.assertEqual([5, 35, 40, 45, 30], result)
 
     # Test single deletion.
@@ -683,10 +680,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertIs([m1, m2, m3], proto.repeated_nested_message[1:4])
     self.assertIs([m0, m1, m2, m3, m4], proto.repeated_nested_message[:])
 
-    # Test that we can use the field as an iterator.
-    result = []
-    for i in proto.repeated_nested_message:
-      result.append(i)
+    result = list(proto.repeated_nested_message)
     self.assertIs([m0, m1, m2, m3, m4], result)
 
     # Test single deletion.
@@ -1186,10 +1180,10 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(type(proto.optional_string), unicode)
 
     proto.optional_string = unicode('Testing')
-    self.assertEqual(proto.optional_string, str('Testing'))
+    self.assertEqual(proto.optional_string, 'Testing')
 
     # Assign a value of type 'str' which can be encoded in UTF-8.
-    proto.optional_string = str('Testing')
+    proto.optional_string = 'Testing'
     self.assertEqual(proto.optional_string, unicode('Testing'))
 
     # Values of type 'str' are also accepted as long as they can be encoded in
@@ -1197,8 +1191,7 @@ class ReflectionTest(unittest.TestCase):
     self.assertEqual(type(proto.optional_string), str)
 
     # Try to assign a 'str' value which contains bytes that aren't 7-bit ASCII.
-    self.assertRaises(ValueError,
-                      setattr, proto, 'optional_string', str('a\x80a'))
+    self.assertRaises(ValueError, setattr, proto, 'optional_string', 'a\x80a')
     # Assign a 'str' object which contains a UTF-8 encoded string.
     self.assertRaises(ValueError,
                       setattr, proto, 'optional_string', 'Тест')
